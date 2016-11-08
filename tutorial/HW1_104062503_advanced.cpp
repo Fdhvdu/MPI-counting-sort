@@ -1,5 +1,4 @@
 //#define LOCAL_DEBUG
-#define SCHED_AFFINITY
 #include"../header/header.hpp"
 #include<algorithm>
 #ifdef MEASURE_TIME
@@ -20,13 +19,7 @@
 #include<unordered_map>
 #include<vector>
 #include<mpi.h>
-#ifdef SCHED_AFFINITY
-#ifndef _GNU_SOURCE
-#define _GNU_SOURCE
-#endif
-#include<sched.h>
-#endif
-#include<sched.h>
+#include<sched.h>	//sched_getcpu
 #include"../header/common.hpp"
 using namespace std;
 
@@ -207,14 +200,6 @@ int main(int argc,char **argv)
 		int provided;
 		//actually, I don't care the return value of provided
 		check(MPI_Init_thread(&argc,&argv,MPI_THREAD_FUNNELED,&provided));
-#ifdef SCHED_AFFINITY
-		cpu_set_t cpuset;
-		CPU_ZERO(&cpuset);
-		for(int i{0};i!=thread::hardware_concurrency();++i)
-			CPU_SET(i,&cpuset);
-		if(sched_setaffinity(0,sizeof(cpu_set_t),&cpuset))
-			throw runtime_error{"sched_setaffinity fail"};
-#endif
 	}
 	const int world_size{get_size()};
 	const int world_rank{get_rank()};
